@@ -3,6 +3,7 @@ package simplesmc;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import bayonet.smc.ParticlePopulation;
@@ -25,7 +26,7 @@ public class SMCAlgorithm<P>
     public Random random = new Random(1);
     
     @Option
-    public int nParticles = 1000;
+    public int nParticles = 1000000;
     
     @Option
     public ResamplingScheme resamplingScheme = ResamplingScheme.MULTINOMIAL;
@@ -54,7 +55,8 @@ public class SMCAlgorithm<P>
     
     double [] logWeights = new double[options.nParticles];
     ArrayList<P> particles = new ArrayList<>();
-    
+    StopWatch watch = new StopWatch();
+    watch.start();
     for (int particleIndex = 0; particleIndex < options.nParticles; particleIndex++)
     {
       Pair<Double, P> proposed = isInitial ?
@@ -65,6 +67,7 @@ public class SMCAlgorithm<P>
           (isInitial ? 0.0 : Math.log(currentPopulation.getNormalizedWeight(particleIndex)));
       particles.add(proposed.getRight());
     }
+    System.out.println(watch.getTime());
     
     return ParticlePopulation.buildDestructivelyFromLogWeights(
         logWeights, 
