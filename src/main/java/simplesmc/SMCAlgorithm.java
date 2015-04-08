@@ -1,9 +1,10 @@
 package simplesmc;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
+import java.util.SplittableRandom;
+import java.util.stream.IntStream;
 
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import bayonet.smc.ParticlePopulation;
@@ -16,6 +17,7 @@ public class SMCAlgorithm<P>
 {
   final SMCProposal<P> proposal;
   final SMCOptions options;
+  final Random[] randoms;
   
   public static class SMCOptions
   {
@@ -26,7 +28,7 @@ public class SMCAlgorithm<P>
     public Random random = new Random(1);
     
     @Option
-    public int nParticles = 1000000;
+    public int nParticles = 1_000_000;
     
     @Option
     public ResamplingScheme resamplingScheme = ResamplingScheme.MULTINOMIAL;
@@ -48,30 +50,29 @@ public class SMCAlgorithm<P>
     
     return currentPopulation;
   }
-
+  
   private ParticlePopulation<P> propose(ParticlePopulation<P> currentPopulation, int previousIteration)
   {
     boolean isInitial = currentPopulation == null;
     
-    double [] logWeights = new double[options.nParticles];
-    ArrayList<P> particles = new ArrayList<>();
-    StopWatch watch = new StopWatch();
-    watch.start();
-    for (int particleIndex = 0; particleIndex < options.nParticles; particleIndex++)
+    final double [] logWeights = new double[options.nParticles];
+    @SuppressWarnings("unchecked")
+    final P [] particles = (P[]) new Object[options.nParticles];
+    
+    IntStream.range(0, options.nParticles).parallel().forEach((particleIndex) -> 
     {
       Pair<Double, P> proposed = isInitial ?
-          proposal.proposeInitial(options.random) :
-          proposal.proposeNext(previousIteration, options.random, currentPopulation.particles.get(particleIndex));
+        proposal.proposeInitial(randoms[particleIndex]) :
+        proposal.proposeNext(previousIteration, randoms[particleIndex], currentPopulation.particles.get(particleIndex));
       logWeights[particleIndex] = 
-          proposed.getLeft().doubleValue() + 
-          (isInitial ? 0.0 : Math.log(currentPopulation.getNormalizedWeight(particleIndex)));
-      particles.add(proposed.getRight());
-    }
-    System.out.println(watch.getTime());
+        proposed.getLeft().doubleValue() + 
+        (isInitial ? 0.0 : Math.log(currentPopulation.getNormalizedWeight(particleIndex)));
+        particles[particleIndex] = (proposed.getRight());
+    });
     
     return ParticlePopulation.buildDestructivelyFromLogWeights(
         logWeights, 
-        particles, 
+        Arrays.asList(particles),
         isInitial ? 0.0 : currentPopulation.logScaling);
   }
 
@@ -79,5 +80,9 @@ public class SMCAlgorithm<P>
   {
     this.proposal = proposal;
     this.options = options;
+    this.randoms = new Random[options.nParticles];
+    SplittableRandom splitRandom = new SplittableRandom(options.random.nextLong());
+    for (int i = 0; i < options.nParticles; i++)
+      this.randoms[i] = new Random(splitRandom.split().nextLong());
   }
 }
