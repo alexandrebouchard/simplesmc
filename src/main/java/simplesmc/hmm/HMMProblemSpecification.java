@@ -22,12 +22,22 @@ import simplesmc.pmcmc.WithSignature;
  * @author Alexandre Bouchard (alexandre.bouchard@gmail.com)
  *
  */
-public class HMMProblemSpecification implements ProblemSpecification<Integer>, WithSignature
+public class HMMProblemSpecification
+  /* startRem */
+  implements ProblemSpecification<Integer>, WithSignature
+  /* endRem */
 {
   private final HMMParams parameters;
   private final List<Integer> observations;
   
-  @Override
+  public HMMProblemSpecification(HMMParams parameters, List<Integer> observations)
+  {
+    this.parameters = parameters;
+    this.observations = observations;
+  }
+  
+  /* startRem */
+  
   public Pair<Double, Integer> proposeNext(int previousSmcIteration,
       Random random, Integer currentParticle)
   {
@@ -36,7 +46,6 @@ public class HMMProblemSpecification implements ProblemSpecification<Integer>, W
     return Pair.of(emissionLogPr, proposed);
   }
   
-  @Override
   public Pair<Double, Integer> proposeInitial(Random random)
   {
     int proposed = parameters.sampleInitial(random);
@@ -44,22 +53,15 @@ public class HMMProblemSpecification implements ProblemSpecification<Integer>, W
     return Pair.of(emissionLogPr, proposed);
   }
 
-  public HMMProblemSpecification(HMMParams parameters, List<Integer> observations)
-  {
-    this.parameters = parameters;
-    this.observations = observations;
-  }
-
-  @Override
   public int nIterations()
   {
     return observations.size();
   }
 
-  @Override
   public long signature()
   {
     return parameters.signature();
   }
-
+  
+  /* endRem */
 }

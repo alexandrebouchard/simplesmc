@@ -13,15 +13,18 @@ import briefj.opt.Option;
  */
 public class SMCOptions
 {
+  /* startRem */
   @Option(gloss = "The ratio under which we should perform resampling.")
   public double essThreshold = 0.5;
+  
+  @Option(gloss = "Type of resampling to use")
+  public ResamplingScheme resamplingScheme = ResamplingScheme.MULTINOMIAL;
+  /* endRem */
 
   @Option(gloss = "Seed for the SMC algorithm")
   public Random random = new Random(1);
   
   @Option(gloss = "Number of particles")
   public int nParticles = 100;
-  
-  @Option(gloss = "Type of resampling to use")
-  public ResamplingScheme resamplingScheme = ResamplingScheme.MULTINOMIAL;
+
 }

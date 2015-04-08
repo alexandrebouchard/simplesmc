@@ -45,17 +45,26 @@ public class SMCAlgorithm<P>
     
     for (int currentIteration = 0; currentIteration < nSMCIterations - 1; currentIteration++)
     {
+      /*
+       * Fill this with both the re-sampling and proposal
+       */
+      
+      /* startRem throw new RuntimeException(); */
       currentPopulation = propose(currentPopulation, currentIteration);
       if (currentPopulation.getRelativeESS() < options.essThreshold &&
           currentIteration < nSMCIterations - 2)
         currentPopulation = currentPopulation.resample(options.random, options.resamplingScheme);
+      /* endRem */
     }
     
     return currentPopulation;
   }
   
   /**
-   * Calls the proposal options.nParticles times, form the new weights, and return the new population
+   * Calls the proposal options.nParticles times, form the new weights, and return the new population.
+   * 
+   * If the provided currentPopulation is null, use the initial distribution, otherwise, use the 
+   * transition. Both are specified by the proposal object.
    * 
    * @param currentPopulation The population of particles before the proposal
    * @param currentIteration The iteration of the particles used as starting points for the proposal step
@@ -65,6 +74,7 @@ public class SMCAlgorithm<P>
   {
     final boolean isInitial = currentPopulation == null;
     
+    /* startRem throw new RuntimeException(); */
     final double [] logWeights = new double[options.nParticles];
     @SuppressWarnings("unchecked")
     final P [] particles = (P[]) new Object[options.nParticles];
@@ -84,6 +94,7 @@ public class SMCAlgorithm<P>
         logWeights, 
         Arrays.asList(particles),
         isInitial ? 0.0 : currentPopulation.logScaling);
+    /* endRem */
   }
 
   public SMCAlgorithm(ProblemSpecification<P> proposal, SMCOptions options)

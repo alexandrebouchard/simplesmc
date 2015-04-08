@@ -31,11 +31,16 @@ public class PMCMCFactor<P> implements Factor
   
   private final SMCAlgorithm<P> smcAlgorithm;
 
+  /**
+   * Used to remember the likelihood values associated with 
+   * the recent calls.
+   */
   private final Cache<Long, Double> cache = CacheBuilder.newBuilder().maximumSize(10).build();
   
   @Override
   public double logDensity()
   {
+    /* startRem throw new RuntimeException(); */
     final long currentSignature = params.signature();
     
     if (cache.getIfPresent(currentSignature) != null)
@@ -45,6 +50,7 @@ public class PMCMCFactor<P> implements Factor
     cache.put(currentSignature, result);
     
     return result;
+    /* endRem */
   }
 
   public PMCMCFactor(WithSignature params, SMCAlgorithm<P> smcAlgorithm)
