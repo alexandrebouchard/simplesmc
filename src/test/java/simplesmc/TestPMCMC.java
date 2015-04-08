@@ -3,7 +3,7 @@ package simplesmc;
 import java.util.List;
 import java.util.Random;
 
-import simplesmc.hmm.HMMProposal;
+import simplesmc.hmm.HMMProblemSpecification;
 import simplesmc.hmm.HMMUtils;
 import simplesmc.hmm.ToyHMMParams;
 import simplesmc.pmcmc.PMCMCFactor;
@@ -54,7 +54,7 @@ public class TestPMCMC implements Runnable, Processor
     public ToyHMMParams hmmParams = new ToyHMMParams(nStates);
 
     @DefineFactor
-    public PMCMCFactor<Integer> likelihood = new PMCMCFactor<>(hmmParams, new SMCAlgorithm<>(new HMMProposal(hmmParams, observations), options));
+    public PMCMCFactor<Integer> likelihood = new PMCMCFactor<>(hmmParams, new SMCAlgorithm<>(new HMMProblemSpecification(hmmParams, observations), options));
      
     @DefineFactor
     public Uniform<MinMaxParameterization> prior = Uniform.on(hmmParams.selfTransitionProbability);

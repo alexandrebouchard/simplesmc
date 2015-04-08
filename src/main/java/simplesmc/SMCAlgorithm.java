@@ -10,33 +10,60 @@ import org.apache.commons.lang3.tuple.Pair;
 import bayonet.smc.ParticlePopulation;
 
 
-
+/**
+ * An SMC algorithm using multi-threading for proposing and suitable
+ * for abstract 'SMC samplers' problems as well as more classical ones.
+ * 
+ * Also performs adaptive re-sampling by monitoring ESS.
+ * 
+ * @author Alexandre Bouchard (alexandre.bouchard@gmail.com)
+ *
+ * @param <P> The type (class) of the individual particles
+ */
 public class SMCAlgorithm<P>
 {
-  public final SMCProposal<P> proposal;
+  public final ProblemSpecification<P> proposal;
   private final SMCOptions options;
+  
+  /**
+   * This is used to ensure that the result is deterministic even in a 
+   * multi-threading context: each particle index has its own unique random 
+   * stream
+   */
   private final Random[] randoms;
   
+  /**
+   * Compute the SMC algorithm
+   * 
+   * @return The particle population at the last step
+   */
   public ParticlePopulation<P> sample()
   {
     ParticlePopulation<P> currentPopulation = propose(null, 0);
     
     int nSMCIterations = proposal.nIterations();
     
-    for (int previousIteration = 0; previousIteration < nSMCIterations - 1; previousIteration++)
+    for (int currentIteration = 0; currentIteration < nSMCIterations - 1; currentIteration++)
     {
-      currentPopulation = propose(currentPopulation, previousIteration);
+      currentPopulation = propose(currentPopulation, currentIteration);
       if (currentPopulation.getRelativeESS() < options.essThreshold &&
-          previousIteration < nSMCIterations - 2)
+          currentIteration < nSMCIterations - 2)
         currentPopulation = currentPopulation.resample(options.random, options.resamplingScheme);
     }
     
     return currentPopulation;
   }
   
-  private ParticlePopulation<P> propose(ParticlePopulation<P> currentPopulation, int previousIteration)
+  /**
+   * Calls the proposal options.nParticles times, form the new weights, and return the new population
+   * 
+   * @param currentPopulation The population of particles before the proposal
+   * @param currentIteration The iteration of the particles used as starting points for the proposal step
+   * @return
+   */
+  private ParticlePopulation<P> propose(final ParticlePopulation<P> currentPopulation, final int currentIteration)
   {
-    boolean isInitial = currentPopulation == null;
+    final boolean isInitial = currentPopulation == null;
     
     final double [] logWeights = new double[options.nParticles];
     @SuppressWarnings("unchecked")
@@ -46,7 +73,7 @@ public class SMCAlgorithm<P>
     {
       Pair<Double, P> proposed = isInitial ?
         proposal.proposeInitial(randoms[particleIndex]) :
-        proposal.proposeNext(previousIteration, randoms[particleIndex], currentPopulation.particles.get(particleIndex));
+        proposal.proposeNext(currentIteration, randoms[particleIndex], currentPopulation.particles.get(particleIndex));
       logWeights[particleIndex] = 
         proposed.getLeft().doubleValue() + 
         (isInitial ? 0.0 : Math.log(currentPopulation.getNormalizedWeight(particleIndex)));
@@ -59,7 +86,7 @@ public class SMCAlgorithm<P>
         isInitial ? 0.0 : currentPopulation.logScaling);
   }
 
-  public SMCAlgorithm(SMCProposal<P> proposal, SMCOptions options)
+  public SMCAlgorithm(ProblemSpecification<P> proposal, SMCOptions options)
   {
     this.proposal = proposal;
     this.options = options;

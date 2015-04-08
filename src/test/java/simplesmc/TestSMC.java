@@ -6,7 +6,7 @@ import java.util.Random;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
-import simplesmc.hmm.HMMProposal;
+import simplesmc.hmm.HMMProblemSpecification;
 import simplesmc.hmm.HMMUtils;
 import simplesmc.hmm.ToyHMMParams;
 
@@ -25,7 +25,7 @@ public class TestSMC
     
     System.out.println("exact = " + HMMUtils.exactDataLogProbability(hmmParams, observations));
     
-    HMMProposal proposal = new HMMProposal(hmmParams, observations);
+    HMMProblemSpecification proposal = new HMMProblemSpecification(hmmParams, observations);
     
     SMCOptions options = new SMCOptions();
     SMCAlgorithm<Integer> smc = new SMCAlgorithm<>(proposal, options);

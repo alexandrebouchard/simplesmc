@@ -14,9 +14,20 @@ import bayonet.marginal.algo.SumProduct;
 import com.google.common.collect.Iterables;
 
 
-
+/**
+ * Some utilities (static functions) for finite HMMs.
+ * 
+ * @author Alexandre Bouchard (alexandre.bouchard@gmail.com)
+ *
+ */
 public class HMMUtils
 {
+  /**
+   * Perform forward simulation of an HMM model of the provided length
+   * 
+   * @return A pair, where the first item is the list of latent states, and the second item
+   *   is the corresponding list of observations
+   */
   public static Pair<List<Integer>,List<Integer>> generate(Random random, HMMParams params, int length)
   {
     List<Integer> 
@@ -36,6 +47,12 @@ public class HMMUtils
     return Pair.of(latents, observations);
   }
   
+  /**
+   * Construct a factor graph, and use the sum product algorithm to 
+   * compute the LOG probability of the data analytically
+   * 
+   * @return The LOG probability of the provided sequence of observations
+   */
   public static double exactDataLogProbability(HMMParams parameters, List<Integer> observations)
   {
     final int len = observations.size();
@@ -62,7 +79,6 @@ public class HMMUtils
     SumProduct<Integer> sumProd = new SumProduct<>(factorGraph);
     return sumProd.logNormalization();
   }
-  
   
   private static double [][] transitionPrs(HMMParams parameters)
   {

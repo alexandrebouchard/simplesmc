@@ -6,18 +6,22 @@ import bayonet.smc.ResamplingScheme;
 import briefj.opt.Option;
 
 
-
+/**
+ * Command line options for SMC
+ * 
+ * @author Alexandre Bouchard (alexandre.bouchard@gmail.com)
+ */
 public class SMCOptions
 {
-  @Option
+  @Option(gloss = "The ratio under which we should perform resampling.")
   public double essThreshold = 0.5;
 
-  @Option
+  @Option(gloss = "Seed for the SMC algorithm")
   public Random random = new Random(1);
   
-  @Option
+  @Option(gloss = "Number of particles")
   public int nParticles = 100;
   
-  @Option
+  @Option(gloss = "Type of resampling to use")
   public ResamplingScheme resamplingScheme = ResamplingScheme.MULTINOMIAL;
 }

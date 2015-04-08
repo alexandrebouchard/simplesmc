@@ -7,16 +7,26 @@ import blang.annotations.FactorArgument;
 import blang.variables.RealVariable;
 
 
-
+/**
+ * A simple, "sticky" HMM, where the latent variable at each
+ * step stays at the same location with probability given by 
+ * selfTransitionProbability, otherwise jump to another state 
+ * uniformly at random.
+ * 
+ * Similarly, the emissions are identical to the latent state 
+ * with probability 1-noiseProbability, and otherwise emits 
+ * one of the other states with equal probability.
+ * 
+ * @author Alexandre Bouchard (alexandre.bouchard@gmail.com)
+ *
+ */
 public class ToyHMMParams implements HMMParams
 {
   @FactorArgument
   public final RealVariable selfTransitionProbability = new RealVariable(0.9);
   
   public static final double noiseProbability = 0.1;
-  
   public final int nStates;
-  
 
   @Override
   public double initialLogPr(int state)
@@ -67,7 +77,7 @@ public class ToyHMMParams implements HMMParams
   @Override
   public double emissionLogPr(int latentState, int emission)
   {
-    return logPr(latentState, emission, noiseProbability);
+    return logPr(latentState, emission, 1.0 - noiseProbability);
   }
 
   @Override
@@ -77,7 +87,7 @@ public class ToyHMMParams implements HMMParams
   }
 
   @Override
-  public int nPossibleObservations()
+  public int nObservedStates()
   {
     return nStates;
   }
@@ -85,7 +95,7 @@ public class ToyHMMParams implements HMMParams
   @Override
   public int sampleEmission(Random random, int currentState)
   {
-    return sample(random, currentState, noiseProbability);
+    return sample(random, currentState, 1.0 - noiseProbability);
   }
 
   @Override
