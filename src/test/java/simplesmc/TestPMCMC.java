@@ -3,7 +3,6 @@ package simplesmc;
 import java.util.List;
 import java.util.Random;
 
-import simplesmc.SMCAlgorithm.SMCOptions;
 import simplesmc.hmm.HMMProposal;
 import simplesmc.hmm.HMMUtils;
 import simplesmc.hmm.ToyHMMParams;

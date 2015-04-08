@@ -8,31 +8,14 @@ import java.util.stream.IntStream;
 import org.apache.commons.lang3.tuple.Pair;
 
 import bayonet.smc.ParticlePopulation;
-import bayonet.smc.ResamplingScheme;
-import briefj.opt.Option;
 
 
 
 public class SMCAlgorithm<P>
 {
-  final SMCProposal<P> proposal;
-  final SMCOptions options;
-  final Random[] randoms;
-  
-  public static class SMCOptions
-  {
-    @Option
-    public double essThreshold = 0.5;
-
-    @Option
-    public Random random = new Random(1);
-    
-    @Option
-    public int nParticles = 100;
-    
-    @Option
-    public ResamplingScheme resamplingScheme = ResamplingScheme.MULTINOMIAL;
-  }
+  public final SMCProposal<P> proposal;
+  private final SMCOptions options;
+  private final Random[] randoms;
   
   public ParticlePopulation<P> sample()
   {

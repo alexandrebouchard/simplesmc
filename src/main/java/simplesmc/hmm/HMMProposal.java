@@ -12,8 +12,8 @@ import simplesmc.pmcmc.WithSignature;
 
 public class HMMProposal implements SMCProposal<Integer>, WithSignature
 {
-  final HMMParams parameters;
-  final List<Integer> observations;
+  private final HMMParams parameters;
+  private final List<Integer> observations;
   
   @Override
   public Pair<Double, Integer> proposeNext(int previousSmcIteration,

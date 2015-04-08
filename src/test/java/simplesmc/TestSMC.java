@@ -6,7 +6,6 @@ import java.util.Random;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
-import simplesmc.SMCAlgorithm.SMCOptions;
 import simplesmc.hmm.HMMProposal;
 import simplesmc.hmm.HMMUtils;
 import simplesmc.hmm.ToyHMMParams;
