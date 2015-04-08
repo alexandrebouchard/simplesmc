@@ -26,8 +26,8 @@ public class TestPopulation
       ParticlePopulation<Integer> population = negativeBinomialPopulation(random, nParticles);
       check(population);
       ParticlePopulation<Integer> resampled = 
-        //naiveResample(random, population);
-        population.resample(random, ResamplingScheme.MULTINOMIAL);
+        naiveResample(random, population);
+        //population.resample(random, ResamplingScheme.MULTINOMIAL);
       check(resampled);
       System.out.println("time=" + stopWatch.getTime() + "ms");
     }
@@ -45,12 +45,13 @@ public class TestPopulation
   static <T> ParticlePopulation<T> naiveResample(Random random, ParticlePopulation<T> population)
   {
     ArrayList<T> particles = new ArrayList<>();
+    /* startRem throw new RuntimeException(); */
     
     for (int particleIndex = 0; particleIndex < population.nParticles(); particleIndex++)
     {
       particles.add(population.sample(random));
     }
-    
+    /* endRem */
     return ParticlePopulation.buildEquallyWeighted(particles, population.logScaling);
   }
   
