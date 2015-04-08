@@ -19,7 +19,7 @@ public class TestSMC
   public void testSMC()
   {
     Random random = new Random(1);
-    ToyHMMParams hmmParams = new ToyHMMParams();
+    ToyHMMParams hmmParams = new ToyHMMParams(5);
     
     Pair<List<Integer>, List<Integer>> generated = HMMUtils.generate(random, hmmParams, 10);
     List<Integer> observations = generated.getRight();

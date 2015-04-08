@@ -2,62 +2,100 @@ package simplesmc.hmm;
 
 import java.util.Random;
 
-import bayonet.distributions.Multinomial;
+import bayonet.distributions.Bernoulli;
+import blang.annotations.FactorArgument;
+import blang.variables.RealVariable;
 
 
 
 public class ToyHMMParams implements HMMParams
 {
-  private final double [][] transitionPrs = new double[][]{{0.8,0.15,0.05},{0.0,0.95,0.05},{0.15,0.15,0.7}};
-  private final double [][] emissionPrs = new double[][]{{0.8,0.15,0.04,0.01},{0.0,0.95,0.04,0.01},{0.15,0.15,0.6,0.1}};
-  private final double [] initialPrs = new double[]{0.25, 0.25, 0.5};
+  @FactorArgument
+  public final RealVariable selfTransitionProbability = new RealVariable(0.9);
+  
+  public static final double noiseProbability = 0.1;
+  
+  public final int nStates;
+  
 
   @Override
   public double initialLogPr(int state)
   {
-    return Math.log(initialPrs[state]);
+    return Math.log(1.0/nStates);
   }
 
   @Override
   public int sampleInitial(Random random)
   {
-    return Multinomial.sampleMultinomial(random, initialPrs);
+    return random.nextInt(nStates);
   }
 
   @Override
   public double transitionLogPr(int currentState, int nextState)
   {
-    return Math.log(transitionPrs[currentState][nextState]);
+    return logPr(currentState, nextState, selfTransitionProbability.getValue());
+  }
+  
+  private double logPr(int currentState, int nextState, double selfTransitionProbability)
+  {
+    if (currentState == nextState)
+      return Math.log(selfTransitionProbability);
+    else
+      return Math.log((1.0 - selfTransitionProbability) / (nStates - 1));
   }
 
   @Override
   public int sampleTransition(Random random, int currentState)
   {
-    return Multinomial.sampleMultinomial(random, transitionPrs[currentState]);
+    return sample(random, currentState, selfTransitionProbability.getValue());
+  }
+  
+  private int sample(Random random, int currentState, double selfTransitionProbability)
+  {
+    if (Bernoulli.generate(random, selfTransitionProbability))
+      return currentState;
+    else
+    {
+      int randomIndex = random.nextInt(nStates - 1);
+      if (randomIndex < currentState)
+        return randomIndex;
+      else
+        return randomIndex + 1;
+    }
   }
 
   @Override
   public double emissionLogPr(int latentState, int emission)
   {
-    return Math.log(emissionPrs[latentState][emission]);
+    return logPr(latentState, emission, noiseProbability);
   }
 
   @Override
   public int nLatentStates()
   {
-    return transitionPrs.length;
+    return nStates;
   }
 
   @Override
   public int nPossibleObservations()
   {
-    return emissionPrs[0].length;
+    return nStates;
   }
 
   @Override
   public int sampleEmission(Random random, int currentState)
   {
-    return Multinomial.sampleMultinomial(random, emissionPrs[currentState]);
+    return sample(random, currentState, noiseProbability);
   }
 
+  @Override
+  public long signature()
+  {
+    return Double.hashCode(selfTransitionProbability.getValue());
+  }
+
+  public ToyHMMParams(int nStates)
+  {
+    this.nStates = nStates;
+  }
 }

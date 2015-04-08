@@ -28,7 +28,7 @@ public class SMCAlgorithm<P>
     public Random random = new Random(1);
     
     @Option
-    public int nParticles = 1_000_000;
+    public int nParticles = 100;
     
     @Option
     public ResamplingScheme resamplingScheme = ResamplingScheme.MULTINOMIAL;

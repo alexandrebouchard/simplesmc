@@ -2,9 +2,11 @@ package simplesmc.hmm;
 
 import java.util.Random;
 
+import simplesmc.pmcmc.WithSignature;
 
 
-public interface HMMParams
+
+public interface HMMParams extends WithSignature
 {
   public double initialLogPr(int state);
   public int sampleInitial(Random random);

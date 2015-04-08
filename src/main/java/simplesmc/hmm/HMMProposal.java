@@ -6,10 +6,11 @@ import java.util.Random;
 import org.apache.commons.lang3.tuple.Pair;
 
 import simplesmc.SMCProposal;
+import simplesmc.pmcmc.WithSignature;
 
 
 
-public class HMMProposal implements SMCProposal<Integer>
+public class HMMProposal implements SMCProposal<Integer>, WithSignature
 {
   final HMMParams parameters;
   final List<Integer> observations;
@@ -42,4 +43,11 @@ public class HMMProposal implements SMCProposal<Integer>
   {
     return observations.size();
   }
+
+  @Override
+  public long signature()
+  {
+    return parameters.signature();
+  }
+
 }
