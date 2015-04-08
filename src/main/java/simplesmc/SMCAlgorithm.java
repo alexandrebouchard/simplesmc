@@ -8,6 +8,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import bayonet.smc.ParticlePopulation;
@@ -31,7 +32,7 @@ public class SMCAlgorithm<P>
     public Random random = new Random(1);
     
     @Option
-    public int nParticles = 1000;
+    public int nParticles = 1000000;
     
     @Option
     public ResamplingScheme resamplingScheme = ResamplingScheme.MULTINOMIAL;
@@ -77,16 +78,18 @@ public class SMCAlgorithm<P>
 //          
 //        }
     
+    StopWatch watch = new StopWatch();
+    watch.start();
     IntStream.range(0, options.nParticles).parallel().forEach((particleIndex) -> {
       Pair<Double, P> proposed = isInitial ?
         proposal.proposeInitial(randoms[particleIndex]) :
-        proposal.proposeNext(previousIteration, options.random, currentPopulation.particles.get(particleIndex));
+        proposal.proposeNext(previousIteration, randoms[particleIndex], currentPopulation.particles.get(particleIndex));
       logWeights[particleIndex] = 
         proposed.getLeft().doubleValue() + 
         (isInitial ? 0.0 : Math.log(currentPopulation.getNormalizedWeight(particleIndex)));
         particles[particleIndex] = (proposed.getRight());
     });
-    
+    System.out.println(watch.getTime());
 
 //      });
 //    }
