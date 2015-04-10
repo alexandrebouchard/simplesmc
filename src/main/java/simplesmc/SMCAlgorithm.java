@@ -3,11 +3,11 @@ package simplesmc;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.SplittableRandom;
-import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import bayonet.smc.ParticlePopulation;
+import briefj.BriefParallel;
 
 
 /**
@@ -40,6 +40,7 @@ public class SMCAlgorithm<P>
   public ParticlePopulation<P> sample()
   {
     ParticlePopulation<P> currentPopulation = propose(null, 0);
+
     
     int nSMCIterations = proposal.nIterations();
     
@@ -79,7 +80,7 @@ public class SMCAlgorithm<P>
     @SuppressWarnings("unchecked")
     final P [] particles = (P[]) new Object[options.nParticles];
     
-    IntStream.range(0, options.nParticles).parallel().forEach((particleIndex) -> 
+    BriefParallel.process(options.nParticles, options.nThreads, particleIndex ->
     {
       Pair<Double, P> proposed = isInitial ?
         proposal.proposeInitial(randoms[particleIndex]) :

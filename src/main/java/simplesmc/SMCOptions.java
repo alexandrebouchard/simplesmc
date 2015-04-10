@@ -27,4 +27,7 @@ public class SMCOptions
   @Option(gloss = "Number of particles")
   public int nParticles = 100;
 
+  @Option(gloss = "Number of parallel threads")
+  public int nThreads = 1;
+
 }
