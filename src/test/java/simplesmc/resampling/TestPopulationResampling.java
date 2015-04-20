@@ -14,9 +14,9 @@ import bayonet.smc.ResamplingScheme;
 
 
 /**
+ * Some simple test cases on the particle population datastructure, and resampling algorithms.
  * 
  * Terminology: a population is a list of particles, their weights, and a normalization constant estimate
- *
  */
 public class TestPopulationResampling
 {
@@ -31,40 +31,11 @@ public class TestPopulationResampling
     ArrayList<Integer> particles = new ArrayList<>();
     double [] logWeights = new double[numberOfParticles];
 
-    // note: java is zero index
     for (int particleIndex = 0; particleIndex < numberOfParticles; particleIndex++)
     {
-      /* 
-       * Construct a ParticlePopulation using importance sampling
-       * where the proposal is Poisson(proposalMean) and the target distribution is
-       * NegativeBinomial(r, p)
-       * 
-       * Note that r and p are defined below as global variables.
-       * 
-       * Hints:
-       * 
-       * - you need to populate the particles and their weights
-       * - to call a static (standard function) use for example Poisson.generate(random, proposalMean)
-       *   where Poisson is the name of the file. 
-       * - dot has a different meaning than in R. It is a bit like $
-       * - after the dot use control-space for the auto-complete!
-       * - you can also right click and select "Open Declaration" when you want to see the source of 
-       *   a function you are calling
-       * - you also need to import classes (files) you reference to, but use the auto-complete for that!
-       * 
-       * To test your code:
-       * 
-       * - right click on the file TestPopulation
-       * - select "Run as" > "JUnit test"
-       * - this will run the test called testIS() below
-       * - you should see a green bar
-       */
-      /* startRem throw new RuntimeException(); */
       int sample = Poisson.generate(random, proposalMean);
-      
       particles.add(sample);
       logWeights[particleIndex] = NegativeBinomial.logDensity(sample, r, p) - Poisson.logDensity(sample, proposalMean);
-      /* endRem */
     }
     
     // This exponentiates and normalizes the weights (destructively, meaning that the input array is
@@ -113,25 +84,6 @@ public class TestPopulationResampling
     return sum;
   }
   
-  /*
-   * Now create a new function, called naiveResample, which takes as input a population,
-   * and output a new population obtained after multinomial re-sampling. 
-   * 
-   * Write a new test called testResampling() similar to the one above, that test your code
-   * with 10k, 20k, 30k, .., 100k particles.
-   * 
-   * Comment on the empirical running time as a function of the number of particles.
-   * Can we do better?
-   * 
-   * Hints:
-   * 
-   * - you can use ParticlePopulation.buildEquallyWeighted(..) to save yourself the trouble of
-   *   creating a vector of weights all equal to 1/N
-   * - you can also use population.sample(..)
-   */
-  
-  /* startRem */
-  
   @Test
   public void testResampling()
   {
@@ -157,18 +109,11 @@ public class TestPopulationResampling
     System.out.println("nParticles=" + population.nParticles() + ",error=" + error + ",ess=" + ess);
   }
 
-  static <T> ParticlePopulation<T> naiveResample(Random random, ParticlePopulation<T> population)
-  {
-    ArrayList<T> particles = new ArrayList<>();
-    
-    
-    for (int particleIndex = 0; particleIndex < population.nParticles(); particleIndex++)
-    {
-      particles.add(population.sample(random));
-    }
-    
-    return ParticlePopulation.buildEquallyWeighted(particles, population.logScaling);
-  }
-
-  /* endRem */
+//  static <T> ParticlePopulation<T> naiveResample(Random random, ParticlePopulation<T> population)
+//  {
+//    ArrayList<T> particles = new ArrayList<>();
+//    for (int particleIndex = 0; particleIndex < population.nParticles(); particleIndex++)
+//      particles.add(population.sample(random));
+//    return ParticlePopulation.buildEquallyWeighted(particles, population.logScaling);
+//  }
 }

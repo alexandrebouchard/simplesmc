@@ -40,7 +40,6 @@ public class PMCMCFactor<P> implements Factor
   @Override
   public double logDensity()
   {
-    /* startRem throw new RuntimeException(); */
     final long currentSignature = params.signature();
     
     if (cache.getIfPresent(currentSignature) != null)
@@ -50,7 +49,6 @@ public class PMCMCFactor<P> implements Factor
     cache.put(currentSignature, result);
     
     return result;
-    /* endRem */
   }
 
   public PMCMCFactor(WithSignature params, SMCAlgorithm<P> smcAlgorithm)

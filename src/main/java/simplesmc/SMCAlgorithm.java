@@ -40,22 +40,15 @@ public class SMCAlgorithm<P>
   public ParticlePopulation<P> sample()
   {
     ParticlePopulation<P> currentPopulation = propose(null, 0);
-
     
     int nSMCIterations = proposal.nIterations();
     
     for (int currentIteration = 0; currentIteration < nSMCIterations - 1; currentIteration++)
     {
-      /*
-       * Fill this with both the re-sampling and proposal
-       */
-      
-      /* startRem throw new RuntimeException(); */
       currentPopulation = propose(currentPopulation, currentIteration);
       if (currentPopulation.getRelativeESS() < options.essThreshold &&
           currentIteration < nSMCIterations - 2)
         currentPopulation = currentPopulation.resample(options.random, options.resamplingScheme);
-      /* endRem */
     }
     
     return currentPopulation;
@@ -75,7 +68,6 @@ public class SMCAlgorithm<P>
   {
     final boolean isInitial = currentPopulation == null;
     
-    /* startRem throw new RuntimeException(); */
     final double [] logWeights = new double[options.nParticles];
     @SuppressWarnings("unchecked")
     final P [] particles = (P[]) new Object[options.nParticles];
@@ -95,7 +87,6 @@ public class SMCAlgorithm<P>
         logWeights, 
         Arrays.asList(particles),
         isInitial ? 0.0 : currentPopulation.logScaling);
-    /* endRem */
   }
 
   public SMCAlgorithm(ProblemSpecification<P> proposal, SMCOptions options)

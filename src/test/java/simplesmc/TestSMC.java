@@ -28,21 +28,23 @@ public class TestSMC
   @Test
   public void testSMC()
   {
+    // Create a synthetic dataset
     Random random = new Random(1);
     ToyHMMParams hmmParams = new ToyHMMParams(5);
-    
     Pair<List<Integer>, List<Integer>> generated = HMMUtils.generate(random, hmmParams, 10);
     List<Integer> observations = generated.getRight();
     
+    // Here we can compute the exact log Z using sum product since we have a discrete HMM
     double exactLogZ = HMMUtils.exactDataLogProbability(hmmParams, observations);
     System.out.println("exact = " + exactLogZ);
     
+    // Run SMC to ensure correctness of our implementation
     HMMProblemSpecification proposal = new HMMProblemSpecification(hmmParams, observations);
-    
     SMCOptions options = new SMCOptions();
     options.nParticles = 1_000;
     SMCAlgorithm<Integer> smc = new SMCAlgorithm<>(proposal, options);
     
+    // Check they agree within 1%
     double approxLogZ = smc.sample().logNormEstimate();
     System.out.println("estimate = " + approxLogZ);
     double tol = Math.abs(exactLogZ / 100.0);
