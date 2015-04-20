@@ -70,21 +70,23 @@ is to create a class that implements ``simplesmc.ProblemSpecification``.
   
 
 ```java
+// Create a synthetic dataset
 Random random = new Random(1);
 ToyHMMParams hmmParams = new ToyHMMParams(5);
-
 Pair<List<Integer>, List<Integer>> generated = HMMUtils.generate(random, hmmParams, 10);
 List<Integer> observations = generated.getRight();
 
+// Here we can compute the exact log Z using sum product since we have a discrete HMM
 double exactLogZ = HMMUtils.exactDataLogProbability(hmmParams, observations);
 System.out.println("exact = " + exactLogZ);
 
+// Run SMC to ensure correctness of our implementation
 HMMProblemSpecification proposal = new HMMProblemSpecification(hmmParams, observations);
-
 SMCOptions options = new SMCOptions();
 options.nParticles = 1_000;
 SMCAlgorithm<Integer> smc = new SMCAlgorithm<>(proposal, options);
 
+// Check they agree within 1%
 double approxLogZ = smc.sample().logNormEstimate();
 System.out.println("estimate = " + approxLogZ);
 double tol = Math.abs(exactLogZ / 100.0);
@@ -103,6 +105,14 @@ Simple PMCMC example
 See this link for an example of a main class for a probabilistic program that samples from the posterior of a static
 parameter using PMCMC (more precisely, only PMMH is supported at the moment). The main customization is
 the Model class, which declaratively specifies the priors on the static parameters.
+
+Running this class will create a folder called ``results/`` in which your experiments will be automatically 
+organized. Note that you should have R in your path for creation of some plots from the MCMC output.
+
+The ``Option`` (and ``OptionSet``) annotations specifies command line options (respectively, classes specifying 
+more command line options. For example the command line option ``-nThreads 8`` is defined and explained in 
+the class ``SMCOption`` via the field ``smcOption``. See ``TestPMCMC`` and its OptionSets for more, or type 
+``-help`` to see the full list with instructions.
   
 
 <sub>From:[simplesmc.TestPMCMC](src/test/java//simplesmc/TestPMCMC.java)</sub>

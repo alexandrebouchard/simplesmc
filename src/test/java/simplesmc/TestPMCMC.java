@@ -44,7 +44,7 @@ public class TestPMCMC implements Runnable
   public Random generateRandom = new Random(1);
   
   @OptionSet(name = "smc")
-  public SMCOptions options = new SMCOptions();
+  public SMCOptions smcOptions = new SMCOptions();
   
   private List<Integer> observations;
   
@@ -72,7 +72,7 @@ public class TestPMCMC implements Runnable
     public PMCMCFactor<Integer> likelihood = 
       new PMCMCFactor<>(
         hmmParams, 
-        new SMCAlgorithm<>(new HMMProblemSpecification(hmmParams, observations), options));
+        new SMCAlgorithm<>(new HMMProblemSpecification(hmmParams, observations), smcOptions));
      
     /**
      * We put a uniform prior on the selfTransitionProbability parameter
@@ -88,6 +88,14 @@ public class TestPMCMC implements Runnable
    * See this link for an example of a main class for a probabilistic program that samples from the posterior of a static
    * parameter using PMCMC (more precisely, only PMMH is supported at the moment). The main customization is
    * the Model class, which declaratively specifies the priors on the static parameters.
+   * 
+   * Running this class will create a folder called ``results/`` in which your experiments will be automatically 
+   * organized. Note that you should have R in your path for creation of some plots from the MCMC output.
+   * 
+   * The ``Option`` (and ``OptionSet``) annotations specifies command line options (respectively, classes specifying 
+   * more command line options. For example the command line option ``-nThreads 8`` is defined and explained in 
+   * the class ``SMCOption`` via the field ``smcOption``. See ``TestPMCMC`` and its OptionSets for more, or type 
+   * ``-help`` to see the full list with instructions.
    */
   @Tutorial(showLink = true, linkPrefix = "src/test/java/", showSource = false)
   @Override
