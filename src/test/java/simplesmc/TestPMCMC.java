@@ -7,6 +7,7 @@ import simplesmc.hmm.HMMProblemSpecification;
 import simplesmc.hmm.HMMUtils;
 import simplesmc.hmm.ToyHMMParams;
 import simplesmc.pmcmc.PMCMCFactor;
+import tutorialj.Tutorial;
 import bayonet.distributions.Uniform;
 import bayonet.distributions.Uniform.MinMaxParameterization;
 import blang.MCMCAlgorithm;
@@ -83,6 +84,12 @@ public class TestPMCMC implements Runnable
   // Note: only instantiate this in run() to avoid problems with command line argument parsing
   public Model model;
 
+  /**
+   * See this link for an example of a main class for a probabilistic program that samples from the posterior of a static
+   * parameter using PMCMC (more precisely, only PMMH is supported at the moment). The main customization is
+   * the Model class, which declaratively specifies the priors on the static parameters.
+   */
+  @Tutorial(showLink = true, linkPrefix = "src/test/java/", showSource = false)
   @Override
   public void run()
   {
