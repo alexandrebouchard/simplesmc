@@ -1,12 +1,11 @@
 package simplesmc.hmm;
 
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import simplesmc.ProblemSpecification;
-import simplesmc.pmcmc.WithSignature;
+import bayonet.distributions.Random;
+import simplesmc.ProblemSpecification; 
 
 
 /**
@@ -22,7 +21,7 @@ import simplesmc.pmcmc.WithSignature;
  * @author Alexandre Bouchard (alexandre.bouchard@gmail.com)
  *
  */
-public class HMMProblemSpecification implements ProblemSpecification<Integer>, WithSignature
+public class HMMProblemSpecification implements ProblemSpecification<Integer>
 {
   private final HMMParams parameters;
   private final List<Integer> observations;
@@ -51,10 +50,5 @@ public class HMMProblemSpecification implements ProblemSpecification<Integer>, W
   public int nIterations()
   {
     return observations.size();
-  }
-
-  public long signature()
-  {
-    return parameters.signature();
   }
 }

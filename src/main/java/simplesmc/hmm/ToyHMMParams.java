@@ -1,11 +1,6 @@
 package simplesmc.hmm;
 
-import java.util.Random;
-
-import bayonet.distributions.Bernoulli;
-import blang.annotations.FactorArgument;
-import blang.variables.RealVariable;
-
+import bayonet.distributions.Random; 
 
 /**
  * A simple, "sticky" HMM, where the latent variable at each
@@ -22,8 +17,7 @@ import blang.variables.RealVariable;
  */
 public class ToyHMMParams implements HMMParams
 {
-  @FactorArgument
-  public final RealVariable selfTransitionProbability = new RealVariable(0.9);
+  public final double selfTransitionProbability = 0.9;
   
   public static final double noiseProbability = 0.1;
   public final int nStates;
@@ -43,7 +37,7 @@ public class ToyHMMParams implements HMMParams
   @Override
   public double transitionLogPr(int currentState, int nextState)
   {
-    return logPr(currentState, nextState, selfTransitionProbability.getValue());
+    return logPr(currentState, nextState, selfTransitionProbability);
   }
   
   private double logPr(int currentState, int nextState, double selfTransitionProbability)
@@ -57,12 +51,12 @@ public class ToyHMMParams implements HMMParams
   @Override
   public int sampleTransition(Random random, int currentState)
   {
-    return sample(random, currentState, selfTransitionProbability.getValue());
+    return sample(random, currentState, selfTransitionProbability);
   }
   
   private int sample(Random random, int currentState, double selfTransitionProbability)
   {
-    if (Bernoulli.generate(random, selfTransitionProbability))
+    if (random.nextBernoulli(selfTransitionProbability))
       return currentState;
     else
     {
@@ -96,12 +90,6 @@ public class ToyHMMParams implements HMMParams
   public int sampleEmission(Random random, int currentState)
   {
     return sample(random, currentState, 1.0 - noiseProbability);
-  }
-
-  @Override
-  public long signature()
-  {
-    return Double.hashCode(selfTransitionProbability.getValue());
   }
 
   public ToyHMMParams(int nStates)

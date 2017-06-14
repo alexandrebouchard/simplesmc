@@ -1,9 +1,6 @@
 package simplesmc.hmm;
 
-import java.util.Random;
-
-import simplesmc.pmcmc.WithSignature;
-
+import bayonet.distributions.Random;
 
 /**
  * Parameters for an HMM: initial prs, transition matrix, emission matrix
@@ -12,7 +9,7 @@ import simplesmc.pmcmc.WithSignature;
  * 
  * @author Alexandre Bouchard (alexandre.bouchard@gmail.com)
  */
-public interface HMMParams extends WithSignature
+public interface HMMParams
 {
   public double initialLogPr(int state);
   public int sampleInitial(Random random);

@@ -1,7 +1,7 @@
 package simplesmc;
 
-import java.util.Random;
 
+import bayonet.distributions.Random;
 import bayonet.smc.ResamplingScheme;
 import briefj.opt.Option;
 

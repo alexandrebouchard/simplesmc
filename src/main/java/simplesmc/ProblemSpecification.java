@@ -1,8 +1,9 @@
 package simplesmc;
 
-import java.util.Random;
 
 import org.apache.commons.lang3.tuple.Pair;
+
+import bayonet.distributions.Random;
 
 
 /**

@@ -1,11 +1,10 @@
 package simplesmc;
 
 import java.util.Arrays;
-import java.util.Random;
-import java.util.SplittableRandom;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import bayonet.distributions.Random;
 import bayonet.smc.ParticlePopulation;
 import briefj.BriefParallel;
 
@@ -93,9 +92,6 @@ public class SMCAlgorithm<P>
   {
     this.proposal = proposal;
     this.options = options;
-    this.randoms = new Random[options.nParticles];
-    SplittableRandom splitRandom = new SplittableRandom(options.random.nextLong());
-    for (int i = 0; i < options.nParticles; i++)
-      this.randoms[i] = new Random(splitRandom.split().nextLong());
+    this.randoms = Random.parallelRandomStreams(options.random, options.nParticles); 
   }
 }

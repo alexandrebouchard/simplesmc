@@ -1,12 +1,12 @@
 package simplesmc;
 
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
+import bayonet.distributions.Random;
 import simplesmc.hmm.HMMProblemSpecification;
 import simplesmc.hmm.HMMUtils;
 import simplesmc.hmm.ToyHMMParams;
