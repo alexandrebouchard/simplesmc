@@ -1,7 +1,7 @@
 package simplesmc;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -25,11 +25,14 @@ public class NaiveSequentiallyInteracting<P>
     this.nParticles = nParticles;
     this.estimator = estimator;
   }
-
+  
+  int [][] ancestors;
+  double [][] weights;
+  
   public double sample(Random random)
   {
-    int [][] ancestors =   new int           [proposal.nIterations()][nParticles];
-    double [][] weights =  new double        [proposal.nIterations()][nParticles];
+    ancestors  =  new int               [proposal.nIterations()][nParticles];
+    weights =  new double            [proposal.nIterations()][nParticles];
     @SuppressWarnings("unchecked")
     P [][] particles =     (P[][]) new Object[proposal.nIterations()][nParticles];
     
@@ -85,6 +88,14 @@ public class NaiveSequentiallyInteracting<P>
   
   private static List<List<Integer>> bs(int nGens, int nPart)
   {
+    List<List<Integer>> result = _bs(nGens, nPart);
+    for (List<Integer> item : result)
+      Collections.reverse(item);
+    return result;
+  }
+  
+  private static List<List<Integer>> _bs(int nGens, int nPart)
+  {
     List<List<Integer>> result = new ArrayList<List<Integer>>();
     if (nGens == 0)
     {
@@ -92,19 +103,114 @@ public class NaiveSequentiallyInteracting<P>
       return result;
     }
     
-    List<List<Integer>> prefixes = bs(nGens - 1, nPart);
+    List<List<Integer>> prefixes = _bs(nGens - 1, nPart);
     for (List<Integer> prefix : prefixes)
-      for (int i = 0; i < nPart; i++)
+    {
+      int bound = prefix.isEmpty() ? nPart - 1 : prefix.get(prefix.size() - 1);
+      for (int i = 0; i <= bound; i++)
       {
         List<Integer> item = new ArrayList<>(prefix);
         item.add(i);
         result.add(item);
       }
+    }
     return result;
+  }
+  
+  private static double permutNorm(int nGens, int nPart)
+  {
+    System.out.println("---");
+    double outerSum = 0.0; 
+    for (List<Integer> bs : bs(nGens, nPart))
+    {
+      double product = 1.0;
+      
+      for (int gen = 0; gen < nGens - 1; gen++)
+      {
+        int curB = bs.get(gen + 1);
+        product *= 1.0 / (curB + 1);
+      }
+      product /= nPart;
+      System.out.println("" + bs + "\t" + product);
+      
+      outerSum += product;
+    }
+    System.out.println("---");
+    return outerSum;
+  }
+  
+//  public double phi()
+//  {
+//    
+//  }
+  
+  public double piExtended(double phi, double z)
+  {
+    int nGens = weights.length;
+    int nPart = weights[0].length;
+    double outerSum = 0.0; 
+    for (List<Integer> bs : bs(nGens, nPart))
+    {
+      double product = weights[nGens - 1][bs.get(nGens - 1)];
+      
+      for (int gen = 0; gen < nGens - 1; gen++)
+      {
+        double innerSum = 0.0;
+        int curB = bs.get(gen + 1);
+        for (int part = 0; part <= curB; part++)
+          innerSum += weights[gen][part];
+        
+        product *= innerSum / (curB + 1);
+      }
+      outerSum += product;
+    }
+    return outerSum * phi / z / nPart;
+  }
+  
+  public double piExtended2(double phi, double z, List<Integer> bs)
+  {
+    int nGens = weights.length;
+    double product = weights[nGens - 1][bs.get(nGens - 1)];
+    
+    for (int gen = 0; gen < nGens - 1; gen++)
+    {
+      double innerSum = 0.0;
+      int curB = bs.get(gen + 1);
+      for (int part = 0; part <= curB; part++)
+        innerSum += weights[gen][part];
+      
+      product *= innerSum;
+    }
+    return product * phi / z;
   }
   
   static enum Z_Estimator
   {
+    FULL_RB {
+      @Override
+      double compute(double[][] weights, int[][] ancestors, Random random)
+      {
+        int nGens = weights.length;
+        int nPart = weights[0].length;
+        
+        double outerSum = 0.0;
+        for (List<Integer> bs : bs(nGens, nPart))
+        {
+          double product = weights[nGens - 1][bs.get(nGens - 1)];
+          
+          for (int gen = 0; gen < nGens - 1; gen++)
+          {
+            double innerSum = 0.0;
+            int curB = bs.get(gen + 1);
+            for (int part = 0; part <= curB; part++)
+              innerSum += weights[gen][part];
+            product *= innerSum / (curB+1);
+          }
+          outerSum += product;
+        }
+        return outerSum / nPart;
+      }
+    },
     SIMPLE {
       @Override
       double compute(double[][] weights, int[][] ancestors, Random random)
@@ -164,49 +270,35 @@ public class NaiveSequentiallyInteracting<P>
         return outerSum;
       }
     },
-    FULL_RB {
+    CONJECTURE_ARNAUD {
 
       @Override
-      double compute(double[][] weights, int[][] ancestors, Random random)
+      double compute(double[][] weights, int[][] ancestors, Random rand)
       {
         int nGens = weights.length;
         int nPart = weights[0].length;
         
-        double [][] normWs = new double[nGens][];
-        for (int gen = 0; gen < nGens; gen++)
-        {
-          normWs[gen] = weights[gen].clone();
-          Multinomial.normalize(normWs[gen]);
-        }
-        
         double outerSum = 0.0;
+        
         for (List<Integer> bs : bs(nGens, nPart))
         {
-          Iterator<Integer> bIter = bs.iterator();
-
-          int previousIndex = nPart - 1;
-          int currentIndex = bIter.next();
-          
           double product = 1.0;
-          for (int t = nGens - 1; t >= 0; t--)
+          
+          for (int t = 0; t < nGens; t++)
           {
-            System.out.println(nGens - t - 1);
-            product *= normWs[t][bs.get(nGens - t - 1)];
+            double innerSum = 0.0;
             
-            double sum = 0.0;
-            for (int i = 0; i <= previousIndex; i++)
-              sum += weights[t][i];
-            product *= sum / (previousIndex + 1);
+            for (int i = 0; i < bs.get(t); i++)
+              innerSum += weights[t][i];
             
-            previousIndex = currentIndex;
-            try { currentIndex = bIter.next(); } catch (Exception e) {}
+            product *= innerSum / (1+bs.get(t));
           }
+          
           outerSum += product;
         }
         
-        return outerSum;
+        return outerSum / Math.pow(nPart, nGens);
       }
-
       
     },
     NAIVE {
@@ -236,39 +328,54 @@ public class NaiveSequentiallyInteracting<P>
   
   public static void main(String [] args)
   {
+    int nGens = 4;
+    int nParts = 2;
+    System.out.println("nGen = " + nGens);
+    System.out.println("nParts = " + nParts);
+
+    System.out.println("permutNorm = " + permutNorm(nGens, nParts));
+    
     // Create a synthetic dataset
     Random random = new Random(1);
-    ToyHMMParams hmmParams = new ToyHMMParams(2);
-    Pair<List<Integer>, List<Integer>> generated = HMMUtils.generate(random, hmmParams, 3);
+    ToyHMMParams hmmParams = new ToyHMMParams(2); // 2 states HMM
+    Pair<List<Integer>, List<Integer>> generated = HMMUtils.generate(random, hmmParams, nGens);
     List<Integer> observations = generated.getRight();
     
     // Here we can compute the exact log Z using sum product since we have a discrete HMM
     double exactLogZ = HMMUtils.exactDataLogProbability(hmmParams, observations);
-    System.out.println("exact = " + Math.exp(exactLogZ));
+    double exactZ =  Math.exp(exactLogZ);
+    System.out.println("exact = " + exactZ);
     
     HMMProblemSpecification proposal = new HMMProblemSpecification(hmmParams, observations);
     
-    for (List<Integer> bs : bs(3, 2))
-    {
-      System.out.println(bs);
-    }
-    
+    List<Integer> fixedBs = bs(nGens, nParts).get(4);
     for (Z_Estimator estimator : Z_Estimator.values())
     {
+      
       System.out.println("Estimator: " + estimator);
       ExhaustiveDebugRandom exhausiveRand = new ExhaustiveDebugRandom();
-      NaiveSequentiallyInteracting<Integer> smc = new NaiveSequentiallyInteracting<>(proposal, 3, estimator);
+      NaiveSequentiallyInteracting<Integer> smc = new NaiveSequentiallyInteracting<>(proposal, nParts, estimator);
       
       double expectation = 0.0;
       int nProgramTraces = 0;
       double variance = 0.0;
+      double piNorm = 0.0;
+      double phiNorm = 0.0;
+      double piNorm2 = 0.0;
       while (exhausiveRand.hasNext())
       {
-        double z = smc.sample(exhausiveRand);
-        expectation += z * exhausiveRand.lastProbability();
-        variance += (z - Math.exp(exactLogZ)) * (z - Math.exp(exactLogZ))* exhausiveRand.lastProbability();
+        double zHat = smc.sample(exhausiveRand);
+        phiNorm += exhausiveRand.lastProbability();
+        piNorm  += smc.piExtended (exhausiveRand.lastProbability(), exactZ);
+        piNorm2 += smc.piExtended2(exhausiveRand.lastProbability(), exactZ, fixedBs);
+        expectation += zHat * exhausiveRand.lastProbability();
+        variance += (zHat - exactZ) * (zHat - exactZ)* exhausiveRand.lastProbability();
         nProgramTraces++;
       }
+      
+      System.out.println("\tphiNorm = " + phiNorm);
+      System.out.println("\tpiNorm = " + piNorm);
+      System.out.println("\tpiNorm2 = " + piNorm2);
       System.out.println("\texpectation = " + expectation); 
       System.out.println("\tstd_dev = " + Math.sqrt(variance));
       System.out.println("\tnProgramTraces = " + nProgramTraces);
