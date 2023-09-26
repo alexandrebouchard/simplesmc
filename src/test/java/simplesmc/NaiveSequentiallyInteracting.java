@@ -270,6 +270,28 @@ public class NaiveSequentiallyInteracting<P>
         return outerSum;
       }
     },
+    NEW_ESTIMATOR {
+
+      @Override
+      double compute(double[][] weights, int[][] ancestors, Random rand)
+      {
+        int nGens = weights.length;
+        int nPart = weights[0].length;
+        double denom = 0.0;
+        double num = 0.0;
+        for (List<Integer> bs : bs(nGens, nPart)) 
+        {
+          double product = 1.0;
+          for (int t = 0; t < nGens; t++)
+            product *= weights[t][bs.get(t)];
+          num += product;
+          denom++;
+        }
+        
+        return num/denom;
+      }
+      
+    },
     CONJECTURE_ARNAUD {
 
       @Override
@@ -328,18 +350,21 @@ public class NaiveSequentiallyInteracting<P>
   
   public static void main(String [] args)
   {
-    int nGens = 4;
+    int nGens = 3;
     int nParts = 2;
     System.out.println("nGen = " + nGens);
     System.out.println("nParts = " + nParts);
 
     System.out.println("permutNorm = " + permutNorm(nGens, nParts));
     
+    System.out.println(bs(nGens, nParts));
+    
     // Create a synthetic dataset
     Random random = new Random(1);
     ToyHMMParams hmmParams = new ToyHMMParams(2); // 2 states HMM
     Pair<List<Integer>, List<Integer>> generated = HMMUtils.generate(random, hmmParams, nGens);
     List<Integer> observations = generated.getRight();
+    System.out.println("Observations : " + observations);
     
     // Here we can compute the exact log Z using sum product since we have a discrete HMM
     double exactLogZ = HMMUtils.exactDataLogProbability(hmmParams, observations);
@@ -348,7 +373,7 @@ public class NaiveSequentiallyInteracting<P>
     
     HMMProblemSpecification proposal = new HMMProblemSpecification(hmmParams, observations);
     
-    List<Integer> fixedBs = bs(nGens, nParts).get(4);
+//    List<Integer> fixedBs = bs(nGens, nParts).get(4);
     for (Z_Estimator estimator : Z_Estimator.values())
     {
       
@@ -359,24 +384,24 @@ public class NaiveSequentiallyInteracting<P>
       double expectation = 0.0;
       int nProgramTraces = 0;
       double variance = 0.0;
-      double piNorm = 0.0;
-      double phiNorm = 0.0;
-      double piNorm2 = 0.0;
+//      double piNorm = 0.0;
+//      double phiNorm = 0.0;
+//      double piNorm2 = 0.0;
       while (exhausiveRand.hasNext())
       {
         double zHat = smc.sample(exhausiveRand);
-        phiNorm += exhausiveRand.lastProbability();
-        piNorm  += smc.piExtended (exhausiveRand.lastProbability(), exactZ);
-        piNorm2 += smc.piExtended2(exhausiveRand.lastProbability(), exactZ, fixedBs);
+//        phiNorm += exhausiveRand.lastProbability();
+//        piNorm  += smc.piExtended (exhausiveRand.lastProbability(), exactZ);
+//        piNorm2 += smc.piExtended2(exhausiveRand.lastProbability(), exactZ, fixedBs);
         expectation += zHat * exhausiveRand.lastProbability();
         variance += (zHat - exactZ) * (zHat - exactZ)* exhausiveRand.lastProbability();
         nProgramTraces++;
       }
       
-      System.out.println("\tphiNorm = " + phiNorm);
-      System.out.println("\tpiNorm = " + piNorm);
-      System.out.println("\tpiNorm2 = " + piNorm2);
-      System.out.println("\texpectation = " + expectation); 
+//      System.out.println("\tphiNorm = " + phiNorm);
+//      System.out.println("\tpiNorm = " + piNorm);
+//      System.out.println("\tpiNorm2 = " + piNorm2);
+      System.out.println("\tbias = " + (exactZ - expectation)); 
       System.out.println("\tstd_dev = " + Math.sqrt(variance));
       System.out.println("\tnProgramTraces = " + nProgramTraces);
     }
